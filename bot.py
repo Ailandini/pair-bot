@@ -1,35 +1,39 @@
 import slack
 import os
-import random
+import time
+import datetime
+import pytz
 from pathlib import Path
 from dotenv import load_dotenv
 from flask import Flask
-from coolname import generate
-
-team_members = ['Ansel', 'Noe', 'Kyle', 'Milo', 'Meridith', 'Tori', 'David', 'Travis']
-random.shuffle(team_members)
-it = iter(team_members)
-pairs = [' & '.join([x, next(it)]) for x in it]
-team_names = [' '.join(x.capitalize() for x in generate(2)) for pair in pairs]
-team_combos = [f'•  {team_names[i]}:\t{pairs[i]}\n' for i in range(len(pairs))]
-
-print(''.join(team_combos))
-
-# table = [team_names, pairs]
-
-# output = ''
-# for row in table:
-#     output+=("{:<20} " * len(pairs)).format(*row) + '\n'
-
-
+from BuildTeams import build_teams
 
 load_dotenv()
-
 app = Flask(__name__)
-
 client = slack.WebClient(token=os.environ['SLACK_TOKEN'])
-client.chat_postMessage(channel="#test", text=''.join(team_combos))
 
+teams = build_teams()
 
-# if __name__ == "__main__":
-#     app.run(debug=True)
+tomorrow = datetime.date.today()
+scheduled_time = datetime.time(hour=1, minute=25)
+schedule_timestamp = datetime.datetime.combine(tomorrow, scheduled_time).strftime('%s')
+
+print(schedule_timestamp)
+
+channels = []
+try:
+    for result in client.users_conversations():
+        channels = [channel['id'] for channel in result["channels"]]
+            
+except SlackApiError as e:
+    print(f"Error: {e}")
+
+for channel_id in channels:
+    client.chat_scheduleMessage(
+        channel=channel_id,
+        text=teams,
+        post_at=schedule_timestamp
+    )
+
+if __name__ == "__main__":
+    app.run(debug=True)
