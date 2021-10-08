@@ -1,7 +1,7 @@
 import random
 from coolname import generate
 
-def build_teams(team_members, OOO_members):
+def build_teams(team_members, OOO_members=[]):
     random.shuffle(team_members)
     team_members += _build_spirits(OOO_members)
 
