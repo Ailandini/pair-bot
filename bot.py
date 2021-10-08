@@ -5,8 +5,8 @@ import datetime
 import pytz
 from dotenv import load_dotenv
 from flask import Flask, request, Response
-from BuildTeams import build_teams
-from Members import getMembers
+from helpers.BuildTeams import build_teams
+from helpers.Members import getMembers
 
 load_dotenv()
 app = Flask(__name__)
